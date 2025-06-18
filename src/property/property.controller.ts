@@ -26,6 +26,11 @@ export class PropertyController {
   async getMyProperties(@Request() req) {
     return this.propertyService.findAllByUser(req.user);
   }
+  @UseGuards(JwtGuard, PropertyOwnershipGuard)
+  @Get(':id')
+  async getOneProperty(@Param('id', ParseIntPipe) id: number, @Request() req) {
+    return this.propertyService.findOneById(id, req.user);
+  }
 
   @UseGuards(JwtGuard)
   @Post()

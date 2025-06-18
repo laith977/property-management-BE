@@ -21,19 +21,19 @@ export class JwtInterceptor implements NestInterceptor {
     const ctx = context.switchToHttp();
     const req = ctx.getRequest();
 
-    const token = req.cookies?.jwt;
-
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.replace('Bearer ', '')
+      : null;
     if (!token) {
       return next.handle();
     }
-
     return from(
       this.jwtService.verifyAsync(token, {
-        secret: 'your_jwt_secret',
+        secret: process.env.JWT_SECRET,
       }),
     ).pipe(
       switchMap((payload: any) => {
-
         return from(this.userService.findById(payload.id)).pipe(
           switchMap((user) => {
             if (!user) {

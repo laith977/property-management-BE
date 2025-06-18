@@ -25,7 +25,6 @@ export class AuthController {
   ) {
     try {
       const { token, user } = await this.authService.register(dto);
-      this.setAuthCookie(res, token);
 
       const { password, ...safeUser } = user;
       return { user: safeUser, token };
@@ -45,7 +44,6 @@ export class AuthController {
   ) {
     try {
       const { token, user } = await this.authService.login(dto);
-      this.setAuthCookie(res, token);
 
       const { password, ...safeUser } = user;
       return { user: safeUser, token };

@@ -11,6 +11,7 @@ import { Property } from './property/property.entity';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -20,7 +21,7 @@ import { Property } from './property/property.entity';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       entities: [User, Property],
-      synchronize: false,
+      synchronize: process.env.NODE_ENV === 'production',
     }),
     AuthModule,
     UserModule,

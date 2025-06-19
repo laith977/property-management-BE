@@ -10,7 +10,7 @@ import { Property } from './property.entity';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { User } from '../user/user.entity';
-import { sanitizeProperty } from '../helpers/data';
+import { sanitizeProperty } from '../common/data';
 @Injectable()
 export class PropertyService {
   constructor(

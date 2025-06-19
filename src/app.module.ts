@@ -6,7 +6,6 @@ import { UserModule } from './user/user.module';
 import { User } from './user/user.entity';
 import { PropertyModule } from './property/property.module';
 import { Property } from './property/property.entity';
-import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -26,7 +25,6 @@ import { CommonModule } from './common/common.module';
     AuthModule,
     UserModule,
     PropertyModule,
-    CommonModule,
   ],
 })
 export class AppModule {}

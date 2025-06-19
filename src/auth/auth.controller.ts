@@ -12,6 +12,9 @@ import { AuthService } from './auth.service';
 import { LoginUserDto } from '../user/dto/login-user.dto';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { Public } from '../common/decorators/public.decorator';
+import { Serialize } from '../common/interceptors/serialize.interceptor';
+import { clearAuthCookie, setAuthCookie } from 'src/common/data';
+import { AuthResponseDto } from './dto/auth-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -19,15 +22,15 @@ export class AuthController {
 
   @Public()
   @Post('register')
+  @Serialize(AuthResponseDto)
   async register(
     @Body() dto: CreateUserDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     try {
       const { token, user } = await this.authService.register(dto);
-
-      const { password, ...safeUser } = user;
-      return { user: safeUser, token };
+      setAuthCookie(res, token);
+      return { user, token };
     } catch (error) {
       throw new HttpException(
         error.message || 'Registration failed',
@@ -37,6 +40,7 @@ export class AuthController {
   }
 
   @Public()
+  @Serialize(AuthResponseDto)
   @Post('login')
   async login(
     @Body() dto: LoginUserDto,
@@ -44,9 +48,9 @@ export class AuthController {
   ) {
     try {
       const { token, user } = await this.authService.login(dto);
-
-      const { password, ...safeUser } = user;
-      return { user: safeUser, token };
+      setAuthCookie(res, token);
+      console.log({ user, token });
+      return { user, token };
     } catch (error) {
       throw new UnauthorizedException(error.message || 'Invalid credentials');
     }
@@ -54,20 +58,7 @@ export class AuthController {
 
   @Post('logout')
   async logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('jwt', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    });
+    clearAuthCookie(res);
     return { message: 'Logged out successfully' };
-  }
-
-  private setAuthCookie(res: Response, token: string) {
-    res.cookie('jwt', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
   }
 }

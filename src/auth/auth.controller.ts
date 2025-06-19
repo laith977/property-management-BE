@@ -49,7 +49,6 @@ export class AuthController {
     try {
       const { token, user } = await this.authService.login(dto);
       setAuthCookie(res, token);
-      console.log({ user, token });
       return { user, token };
     } catch (error) {
       throw new UnauthorizedException(error.message || 'Invalid credentials');

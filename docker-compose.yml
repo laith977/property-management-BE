@@ -5,10 +5,10 @@ services:
     container_name: property-mgmt-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: managementDB
-      MYSQL_USER: dev_user
-      MYSQL_PASSWORD: dev_password
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
     ports:
       - "3306:3306"
     volumes:

@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { User } from './user/user.entity';
 import { PropertyModule } from './property/property.module';
+import * as mysql from 'mysql2/promise';
 import { Property } from './property/property.entity';
 
 @Module({
@@ -13,16 +14,42 @@ import { Property } from './property/property.entity';
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
     }),
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT as string, 10),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
-      entities: [User, Property],
-      synchronize: process.env.NODE_ENV === 'production',
+
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        // ✅ Ensure database exists
+        const host = configService.get<string>('DB_HOST');
+        const port = configService.get<number>('DB_PORT');
+        const user = configService.get<string>('DB_USERNAME');
+        const password = configService.get<string>('DB_PASSWORD');
+        const dbName = configService.get<string>('DB_DATABASE');
+
+        const connection = await mysql.createConnection({
+          host,
+          port,
+          user,
+          password,
+        });
+        await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\`;`);
+        await connection.end();
+
+        console.log(`✅ Database '${dbName}' ensured`);
+
+        return {
+          type: 'mysql',
+          host,
+          port,
+          username: user,
+          password,
+          database: dbName,
+          entities: [User, Property],
+          synchronize: true,
+        };
+      },
     }),
+
     AuthModule,
     UserModule,
     PropertyModule,
